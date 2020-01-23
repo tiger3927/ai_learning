@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"/>
+    <link rel="stylesheet" href="static/assets/css/bootstrap.css">
+    <script src="static/assets/js/jquery-1.11.1.min.js"></script>
+    <script src="static/assets/js/bootstrap.min.js"></script>
+    <title>全自动模拟器</title>
+</head>
+<body>
+
+<style type="text/css">
+    #tip {
+        background-color: #fff;
+        padding: 0 10px;
+        border: 1px solid silver;
+        box-shadow: 3px 4px 3px 0px silver;
+        position: absolute;
+        font-size: 12px;
+        right: 10px;
+        top: 5px;
+        border-radius: 3px;
+        line-height: 36px;
+    }
+</style>
+
+<script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.6&key=fe31112b36db822871bda036d263b9c2&plugin=AMap.Driving,AMap.MouseTool,AMap.CircleEditor,AMap.PolyEditor,AMap.ToolBar,AMap.DistrictSearch"></script>
+<script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+
+<script type="text/javascript">
+
+    var mapObj = null;
+    $(document).ready(function () {
+        mapObj = new AMap.Map("container"); // 创建地图实例
+        var point = new AMap.LngLat(116.404, 39.915); // 创建点坐标，这是个火星坐标，真实坐标对应的火星坐标为116.410251,39.916412
+        mapObj.setZoomAndCenter(11, point);
+        //test
+        driving();
+    });
+
+
+    //test driving
+    function driving() {
+        AMap.service(["AMap.Driving"], function () {
+            var drive = new AMap.Driving({
+                map: mapObj,
+            });
+            var ptStart = new AMap.LngLat(116.379018, 39.865026);
+            var ptEnd = new AMap.LngLat(116.321139, 39.896028);
+            drive.search(ptStart, ptEnd, driveRouteResult);
+        });
+    }
+
+    function driveRouteResult(status, result) {
+        if (status === 'complete' && result.info === 'OK') {
+            console.debug("route ok");
+            showRoutes(result.routes);
+        } else {
+            console.debug("error=" + result);
+        }
+    }
+
+
+    function showRoutes(routes) {
+        $(routes).each(function (index, route) {
+            var arrayRoute = new Array();//all points
+            console.debug("route" + index + "=" + route.steps);
+            $(route.steps).each(function (index, step) {
+                console.debug("step" + index + "=" + step.instruction + ",distance=" + step.distance + ",path=" + step.path);
+                drawPolyline(mapObj, step.path);
+                arrayRoute = arrayRoute.concat(step.path);
+            });
+            var car = addcarMarker(mapObj);
+            console.debug("all pts=" + arrayRoute);
+            car.moveAlong(arrayRoute, 250, null, true);//animation
+            mapObj.setFitView();
+        });
+    }
+
+
+    function addcarMarker(mapObj) {
+        /*
+        var car=new AMap.Marker({
+             id:"test01",
+             position:new AMap.LngLat(116.397428,39.90923),
+             icon:"caricon.png",
+             autoRotation:true,
+             map:mapObj
+        });
+        */
+        var car = new AMap.Marker({
+            map: mapObj,
+            autoRotation: true,
+            position: [116.397428, 39.90923],
+            offset: new AMap.Pixel(-16, -8),
+            icon: new AMap.Icon({
+                size: new AMap.Size(128, 64),  //图标大小
+                image: "images/car.png",
+                imageOffset: new AMap.Pixel(0, 0),
+                imageSize: new AMap.Size(32, 16),
+            })
+        });
+
+        return car;
+
+    }
+
+
+    function drawPolyline(mapObj, arrayLine) {
+        var polyline = new AMap.Polyline({
+            map: mapObj,
+            path: arrayLine,
+            strokeColor: "#1763ff", //线颜色
+            strokeOpacity: 1, //线透明度
+            strokeWeight: 8, //线宽
+            strokeStyle: "dashed", //线样式
+            strokeDasharray: [10, 5] //补充线样式
+        });
+        return polyline;
+    }
+
+
+</script>
+<script type="text/javascript">
+    var sim_start = false
+
+    $(document).ready(function () {
+        polygonobj = null;
+
+        mapObj.plugin(["AMap.MouseTool"], function () {        //鼠标工具插件
+            mousetool = new AMap.MouseTool(mapObj);
+        });
+
+        polygonstatus = "none"
+
+        $('#polygonfilelist').change(function () {
+            //搜索按钮
+            o = document.getElementById("polygonfilelist");
+            $("#editpolygonname").val(o.options[o.selectedIndex].text)
+            var filename = $("#editpolygonname").val();
+            if (filename == "未定义") {
+                if (polygonobj != null) mapObj.remove(polygonobj);
+                polygonobj = null;
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: "/loadpolygonfile",
+                data: {filename: filename},
+                dataType: "json",
+                success: function (data) {
+                    if (data.code == 0) {
+                        if (polygonobj != null) mapObj.remove(polygonobj)
+                        polygonobj = new AMap.Polygon({
+                            map: mapObj,
+                            path: data.data,
+                            strokeColor: "#0000ff",
+                            strokeOpacity: 0.7,
+                            strokeWeight: 1,
+                            fillColor: "#10f544",
+                            fillOpacity: 0.3
+                        });
+                        mapObj.add(polygonobj);
+                        mapObj.setCenter(data.center);
+                        mapObj.setZoom(11)
+                    }
+                },
+                error: function (data, status, e) {
+                    //这里
+                    alert(e);
+                }
+            });
+
+
+            return false;
+        });
+
+        $('#redrawpolygonfile').click(function () {
+            if (polygonobj != null) mapObj.remove(polygonobj);
+            polygonstatus = 'polygon';
+            mousetool.polygon();
+        });
+
+        AMap.event.addListener(mousetool, 'draw', function (e) {
+            //arr = e.obj.getPath();//获取路径坐标
+            if (polygonstatus == 'circle') {
+                lng = e.obj.getCenter().lng;
+                lat = e.obj.getCenter().lat;
+                radius = e.obj.getRadius();
+                console.log(lng, lat, radius);
+                mousetool.close();
+            } else if (polygonstatus == 'polygon' || polygonstatus == 'rectangle') {
+                var path = e.obj.getPath();
+                arr = [];
+                for (var i = 0; i < path.length; i++) {
+                    arr.push([path[i].lng, path[i].lat]);
+                }
+                console.log(arr);
+                mousetool.close();
+                polygonobj = e.obj;
+            }
+        });
+
+        $('#savepolygonfile').click(function () {
+            if (polygonobj == null) return;
+            if ($("#editpolygonname").val() == "") return;
+            filename = $("#editpolygonname").val();
+            var path = polygonobj.getPath();
+            var arr = [];
+            for (var i = 0; i < path.length; i++) {
+                arr.push([path[i].lng, path[i].lat]);
+            }
+            arr = JSON.stringify(arr);
+
+            $.ajax({
+                type: 'POST',
+                url: "/savepolygonfile",
+                data: {filename: filename, polygon: arr},
+                dataType: "json",
+                success: function (data) {
+                    loadpolygonfiles();
+                },
+                error: function (data, status, e) {
+                    //这里
+                    alert(e);
+                }
+            });
+        });
+
+        $('#start_callme_sim').click(function () {
+            var vehiclecount = Number($('#editvehiclecount').val());
+            var startphonenumber = Number($('#editstartphonenumber').val());
+            $.ajax({
+                type: 'POST',
+                url: "/callme_sim_action",
+                data: {action: "start", vehiclecount: vehiclecount, startphonenumber: startphonenumber},
+                dataType: "json",
+                success: function (data) {
+                    if (data.code == 0) {
+                        sim_start = true
+                    }
+                },
+                error: function (data, status, e) {
+                    //这里
+                    alert(e);
+                }
+            });
+
+        });
+
+        $('#stop_callme_sim').click(function () {
+            $.ajax({
+                type: 'POST',
+                url: "/callme_sim_action",
+                data: {action: "stop"},
+                dataType: "json",
+                success: function (data) {
+                    if (data.code == 0) {
+                        sim_start = false
+                    }
+                },
+                error: function (data, status, e) {
+                    //这里
+                    alert(e);
+                }
+            });
+
+        });
+
+        $('#currentpolygon').click(function () {
+            $.ajax({
+                type: 'POST',
+                url: "/getcurrentpolygon",
+                data: null,
+                dataType: "json",
+                success: function (data) {
+                    if (data.code == 0) {
+                        if (polygonobj != null) mapObj.remove(polygonobj)
+                        polygonobj = new AMap.Polygon({
+                            map: mapObj,
+                            path: data.data,
+                            strokeColor: "#0000ff",
+                            strokeOpacity: 0.7,
+                            strokeWeight: 1,
+                            fillColor: "#10f544",
+                            fillOpacity: 0.3
+                        });
+                        mapObj.add(polygonobj);
+                        mapObj.setCenter(data.center);
+                        mapObj.setZoom(11)
+                    }
+                },
+                error: function (data, status, e) {
+                    //这里
+                    alert(e);
+                }
+            });
+
+
+        });
+
+        loadpolygonfiles();
+        loadcallme_simconfig();
+
+    });
+
+    function loadpolygonfiles() {
+        $('#polygonfilelist').empty();
+        $("#polygonfilelist").append("<option value='99999'>" + "未定义" + "</option>");
+        $.ajax({
+            type: 'POST',
+            url: "/listpolygonnames",
+            data: null,
+            dataType: "json",
+            success: function (data) {
+                if (data.code == 0) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        $("#polygonfilelist").append("<option value='" + String(i) + "'>" + data.data[i] + "</option>");
+                    }
+                }
+            },
+            error: function (data, status, e) {
+                //这里
+                alert(e);
+            }
+        });
+    }
+
+    function loadcallme_simconfig() {
+
+        $.ajax({
+            type: 'POST',
+            url: "/callme_sim_getconfig",
+            data: null,
+            dataType: "json",
+            success: function (data) {
+                if (data.code == 0) {
+                    $('#editvehiclecount').val(data.data.vehiclecount);
+                    $('#editstartphonenumber').val(data.data.startphonenumber);
+                }
+            },
+            error: function (data, status, e) {
+                //这里
+                alert(e);
+            }
+        });
+    }
+
+
+</script>
+
+<div class="container" style="width:100%">
+    <div class="row">
+        <div class="col-md-6"><h4>GoldHonor JT808 车辆模拟器 Python 版</h4></div>
+        <div class="col-md-6">
+            <button style="width: 100px" type="button" id="start_callme_sim">启动模拟器</button>
+            <button style="width: 100px" type="button" id="stop_callme_sim">停止模拟器</button>
+            <input id="edittoname" type="text"/>
+            <button id="locatetoname" type="button">定位到</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="container" style="height:400px"></div>
+                    <div id="tip">
+                        省：<select id='province' style="width:100px" onchange='search(this)'></select>
+                        市：<select id='city' style="width:100px" onchange='search(this)'></select>
+                        区：<select id='district' style="width:100px" onchange='search(this)'></select>
+                        街道：<select id='street' style="width:100px" onchange='setCenter(this)'></select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel">
+                        全自动模拟器系统运行状态：
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel">
+                <div class="row ">
+                    <div class="col-md-5" style="text-align: right">
+                        <button id="currentpolygon" type="button">当前围栏</button>
+                        <select id="polygonfilelist">
+                            <option>无定义</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="redrawpolygonfile" type="button">重绘围栏</button>
+                    </div>
+                    <div class="col-md-3" style="text-align: right">
+                        <input id="editpolygonname" type="text"/>
+                    </div>
+                    <div class="col-md-2">
+                        <button id="savepolygonfile" type="button">保存</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3" style="text-align: right">
+                        车辆总数
+                    </div>
+                    <div class="col-md-3" style="text-align: right">
+                        <input id="editvehiclecount" type="text"/>
+                    </div>
+                    <div class="col-md-3" style="text-align: right">
+                        起始号段(慎重)
+                    </div>
+                    <div class="col-md-3" style="text-align: right">
+                        <input id="editstartphonenumber" type="text"/>
+                    </div>
+                </div>
+            </div>
+            <div class="panel pre-scrollable" style="height:100px">
+                asdfasdf
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    var district, polygons = [], citycode;
+    var citySelect = document.getElementById('city');
+    var districtSelect = document.getElementById('district');
+    var areaSelect = document.getElementById('street');
+
+    $(document).ready(function () {
+
+
+        var opts = {
+            subdistrict: 1,   //返回下一级行政区
+            showbiz: false  //最后一级返回街道信息
+        };
+        district = new AMap.DistrictSearch(opts);//注意：需要使用插件同步下发功能才能这样直接使用
+        district.search('中国', function (status, result) {
+            if (status == 'complete') {
+                getData(result.districtList[0]);
+            }
+        });
+
+
+    });
+
+    function getData(data, level) {
+        var bounds = data.boundaries;
+        if (bounds) {
+            for (var i = 0, l = bounds.length; i < l; i++) {
+                var polygon = new AMap.Polygon({
+                    map: mapObj,
+                    strokeWeight: 1,
+                    strokeColor: '#CC66CC',
+                    fillColor: '#CCF3FF',
+                    fillOpacity: 0.0,
+                    path: bounds[i]
+                });
+                polygons.push(polygon);
+            }
+            mapObj.setFitView();//地图自适应
+        }
+
+
+        //清空下一级别的下拉列表
+        if (level === 'province') {
+            citySelect.innerHTML = '';
+            districtSelect.innerHTML = '';
+            areaSelect.innerHTML = '';
+        } else if (level === 'city') {
+            districtSelect.innerHTML = '';
+            areaSelect.innerHTML = '';
+        } else if (level === 'district') {
+            areaSelect.innerHTML = '';
+        }
+
+        var subList = data.districtList;
+        if (subList) {
+            var contentSub = new Option('--请选择--');
+            var curlevel = subList[0].level;
+            var curList = document.querySelector('#' + curlevel);
+            curList.add(contentSub);
+            for (var i = 0, l = subList.length; i < l; i++) {
+                var name = subList[i].name;
+                var levelSub = subList[i].level;
+                var cityCode = subList[i].citycode;
+                contentSub = new Option(name);
+                contentSub.setAttribute("value", levelSub);
+                contentSub.center = subList[i].center;
+                contentSub.adcode = subList[i].adcode;
+                curList.add(contentSub);
+            }
+        }
+
+    }
+
+    function search(obj) {
+        //清除地图上所有覆盖物
+        for (var i = 0, l = polygons.length; i < l; i++) {
+            polygons[i].setMap(null);
+        }
+        var option = obj[obj.options.selectedIndex];
+        var keyword = option.text; //关键字
+        var adcode = option.adcode;
+        district.setLevel(option.value); //行政区级别
+        district.setExtensions('all');
+        //行政区查询
+        //按照adcode进行查询可以保证数据返回的唯一性
+        district.search(adcode, function (status, result) {
+            if (status === 'complete') {
+                getData(result.districtList[0], obj.id);
+            }
+        });
+    }
+
+    function setCenter(obj) {
+        mapObj.setCenter(obj[obj.options.selectedIndex].center)
+    }
+
+</script>
+<script type="text/javascript" src="https://webapi.amap.com/demos/js/liteToolbar.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<html>
+<head>
+<script type="text/javascript">
+var ws = new WebSocket("ws://"+location.host+"/chat");
+ws.onmessage = function(event) {
+    console.log(event);
+    var s=document.getElementById("infodiv").innerHTML;
+    s=JSON.stringify(event.data)+"</br>"+s;
+    document.getElementById("infodiv").innerHTML=s;
+}
+function send() {
+    ws.send(document.getElementById('chat').value );
+}
+</script>
+</head>
+
+<body>
+    <div>
+        hello
+        <input id="chat">
+        <button  onclick="send()">send</button>
+    </div>
+    <div>
+        <div id="infodiv">信息开始....</div>
+
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,476 @@
+﻿{% extends "layout_main.html" %}
+{% block body %}
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="assets/js/daterangepicker/daterangepicker-bs3.css">
+<link rel="stylesheet" href="assets/js/select2/select2.css">
+<link rel="stylesheet" href="assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="assets/js/multiselect/css/multi-select.css">
+
+<!-- Bottom Scripts -->
+<script src="assets/js/moment.min.js"></script>
+
+<!-- Imported scripts on this page -->
+<script src="assets/js/daterangepicker/daterangepicker.js"></script>
+<script src="assets/js/datepicker/bootstrap-datepicker.js"></script>
+<script src="assets/js/timepicker/bootstrap-timepicker.min.js"></script>
+<script src="assets/js/colorpicker/bootstrap-colorpicker.min.js"></script>
+<script src="assets/js/select2/select2.min.js"></script>
+<script src="assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+<script src="assets/js/tagsinput/bootstrap-tagsinput.min.js"></script>
+<script src="assets/js/typeahead.bundle.js"></script>
+<script src="assets/js/handlebars.min.js"></script>
+<script src="assets/js/multiselect/js/jquery.multi-select.js"></script>
+
+
+<script type="text/javascript">
+
+    function fieldimgupload(e) {
+        var myinputcontrolname = e.id;
+        var myvaluecontrolname = myinputcontrolname.substr(0, myinputcontrolname.lastIndexOf("_img_file"));
+        var myimgcontrolname = myvaluecontrolname + "_img";
+
+        var formData = new FormData();
+        formData.append('filedb', 'attach');
+        formData.append('file', e.files[0]);
+        $.ajax({
+            url: '/api/upload',
+            type: 'POST',
+            cache: false,
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function (data, status) {
+                if (typeof (data.code) != 'undefined') {
+                    if (data.code != "0") {
+                        //print error
+                        alert(data.code + data.message);
+                    } else {
+                        //clear
+                        $('#' + myvaluecontrolname).val(data.data.id);
+                        $('#' + myimgcontrolname).attr('src', '/api/download?filedb=attach&id=' + data.data.id +'&maxwidth=150');
+                    }
+                }
+            },
+            error: function (data, status, e) {
+                //这里
+                alert(e);
+            }
+        });
+        return false;
+    }
+
+    $(document).ready(function () {
+
+        $("#modal-photo-img").bind("click", function () {
+            $('#modal-photo').modal('hide');
+        });
+
+        $('.fieldfileimg').bind("click", function () {
+            //搜索按钮
+            var name1 = $(this).attr("id") + "_file";
+            var src = $(this).attr("src");
+            if (src.indexOf("nullimg") > 0) {
+            } else {
+                src = src.substr(0, src.indexOf("&maxwidth="));
+                $("#modal-photo-img").attr("src", src);
+                $('#modal-photo').modal('show');
+            }
+            //$("#" + name).click();
+            return false;
+        });
+
+        var myTable = $('#example').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "autoFill": true,
+            "autoWidth": true,
+            "scrollX": true,
+            "searching": false,
+            "ajax": {
+                "url": "/api/dictionarytype_view_api",
+                "type": "POST",
+                "data": function (d) {
+                    //添加额外的参数传给服务器
+                    d.posttype = "query";
+                        
+                }
+            },
+            "columns": [
+                
+
+            ]
+        });
+
+        $('#b_query').click(function () {
+            //搜索按钮
+            $("#example").dataTable().fnDraw(false);
+            return false;
+        });
+
+        $('#b_new').click(function () {
+            //添加按钮
+            var rowdata = {
+                dictionarytype_id: null,
+            };
+
+            var urowdata=JSON.parse(JSON.stringify(rowdata));
+
+            setupdateformdata(urowdata);
+            $('#modal-update').modal('show', { backdrop: 'static' });
+
+            return false;
+        });
+
+
+        $('#btn_confirmupdatemodal').click(function () {
+            //确认modal按钮
+            pushupdateformdata();
+            var posttype = "update";
+            if (tabelrowdata_update.dictionarytype_id==null) posttype="insert"
+
+            $.ajax({
+                type: 'POST',
+                url: "/api/dictionarytype_view_api",
+                data: { posttype: posttype, updaterowdata: tabelrowdata_update},
+                success: function (data) {
+                    $("#example").dataTable().fnDraw(false);
+                },
+                dataType: "text"
+            });
+
+
+        });
+
+        $('#btn_deleteupdatemodal').click(function () {
+            //删除modal按钮
+            var result = confirm('是否删除！');
+            if (result) {
+            } else {
+                return false;
+            }
+            pushupdateformdata();
+            var posttype = "delete";
+            if (tabelrowdata_update.dictionarytype_id==null) return;
+            $.ajax({
+                type: 'POST',
+                url: "/api/dictionarytype_view_api",
+                data: { posttype: posttype, updaterowdata: tabelrowdata_update},
+                success: function (data) {
+                    $("#example").dataTable().fnDraw(false);
+                },
+                dataType: "text"
+            });
+
+
+        });
+
+
+        $('#example tbody').on('click', 'tr', function () {
+            var table = $('#example').DataTable();
+            console.log(table.row(this).data());
+            var rowdata = table.row(this).data();
+
+            var urowdata=JSON.parse(JSON.stringify(rowdata));
+            setupdateformdata(urowdata);
+            $('#modal-update').modal('show', { backdrop: 'static' });
+        });
+
+        if ($.isFunction($.fn.daterangepicker)) {
+            $(".daterange").each(function (i, el) {
+                // Change the range as you desire
+                var ranges = {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                    'Last 7 Days': [moment().subtract('days', 6), moment()],
+                    'Last 30 Days': [moment().subtract('days', 29), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+                };
+
+                var $this = $(el),
+                    opts = {
+                        format: attrDefault($this, 'format', 'MM/DD/YYYY'),
+                        timePicker: attrDefault($this, 'timePicker', false),
+                        timePickerIncrement: attrDefault($this, 'timePickerIncrement', false),
+                        separator: attrDefault($this, 'separator', ' - '),
+                    },
+                    min_date = attrDefault($this, 'minDate', ''),
+                    max_date = attrDefault($this, 'maxDate', ''),
+                    start_date = attrDefault($this, 'startDate', ''),
+                    end_date = attrDefault($this, 'endDate', '');
+
+                if ($this.hasClass('add-ranges')) {
+                    opts['ranges'] = ranges;
+                }
+
+                if (min_date.length) {
+                    opts['minDate'] = min_date;
+                }
+
+                if (max_date.length) {
+                    opts['maxDate'] = max_date;
+                }
+
+                if (start_date.length) {
+                    opts['startDate'] = start_date;
+                }
+
+                if (end_date.length) {
+                    opts['endDate'] = end_date;
+                }
+
+
+                $this.daterangepicker(opts, function (start, end) {
+                    var drp = $this.data('daterangepicker');
+
+                    if ($this.is('[data-callback]')) {
+                        //daterange_callback(start, end);
+                        callback_test(start, end);
+                    }
+
+                    if ($this.hasClass('daterange-inline')) {
+                        $this.find('span').html(start.format(drp.format) + drp.separator + end.format(drp.format));
+                    }
+                });
+
+                if (typeof opts['ranges'] == 'object') {
+                    $this.data('daterangepicker').container.removeClass('show-calendar');
+                }
+            });
+        }
+    });
+
+</script>
+
+<div class="row">
+
+
+
+    <div class="col-md-2">
+        <div class="form-group">
+            <button id="b_query" class="btn btn-secondary">查询</button>
+            <button id="b_new" class="btn btn-orange">新增</button>
+
+        </div>
+    </div>
+</div>
+<div>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+<div class="page-loading-overlay">
+    <div class="loader-2"></div>
+</div>
+
+
+{% end %}
+
+
+
+{% block footer %}
+
+    <!-- Modal 6 (Long Modal)覆盖在上层-->
+    <div class="modal fade" id="modal-update">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">字典</h4>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#tab1" data-toggle="tab">
+                                <span>基本信息</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab2" data-toggle="tab">
+                                <span>扩展信息</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab3" data-toggle="tab">
+                                <span>关键项</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab4" data-toggle="tab">
+                                <span>可选项</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content scrollable" data-max-height="330">
+                        <div class="tab-pane  active" id="tab1">
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">字典类型名称</div>
+                                
+                                <div class="col-md-8 "><input id="control_dictionarytype_name" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">字典类型描述</div>
+                                
+                                <div class="col-md-8 "><input id="control_dictionarytype_description" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">字典类型索引</div>
+                                
+                                <div class="col-md-8 "><input id="control_dictionarytype_typeid" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">字典类型更新时间</div>
+                                
+                                <div class="col-md-8 "><input id="control_dictionarytype_updatetime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+
+
+                        </div>
+
+                        <div class="tab-pane" id="tab2">
+                        </div>
+                        <div class="tab-pane" id="tab3">
+                        </div>
+                        <div class="tab-pane" id="tab4">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn_confirmupdatemodal" data-dismiss="modal" class="btn btn-info">保存数据</button>
+                    <button type="button" id="btn_deleteupdatemodal" data-dismiss="modal" class="btn btn-info">删除</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript">
+
+    function resetFileInput(file) {
+        file.after(file.clone().val(""));
+        file.remove();
+    }
+
+    var tabelrowdata_update=null;
+
+    function setupdateformdata(data)
+    {
+        tabelrowdata_update=data;
+        
+        
+        $("#control_dictionarytype_name").val("");
+        $("#control_dictionarytype_name").val(data.dictionarytype_name);
+        
+        
+        
+        $("#control_dictionarytype_description").val("");
+        $("#control_dictionarytype_description").val(data.dictionarytype_description);
+        
+        
+        
+        $("#control_dictionarytype_typeid").val("");
+        $("#control_dictionarytype_typeid").val(data.dictionarytype_typeid);
+        
+        
+        
+        $("#control_dictionarytype_updatetime").val("");
+        $("#control_dictionarytype_updatetime").val(data.dictionarytype_updatetime);
+        
+        
+    }
+
+    function pushupdateformdata()
+    {
+        if (tabelrowdata_update==null) return;
+
+        
+        if (tabelrowdata_update.dictionarytype_name == $("#control_dictionarytype_name").val()) {
+            delete tabelrowdata_update.dictionarytype_name;
+        }else if((tabelrowdata_update.dictionarytype_name==null) && ($("#control_dictionarytype_name").val()=="")){
+            delete tabelrowdata_update.dictionarytype_name;
+        }else {
+            tabelrowdata_update.dictionarytype_name = $("#control_dictionarytype_name").val();
+        }
+        
+        if (tabelrowdata_update.dictionarytype_description == $("#control_dictionarytype_description").val()) {
+            delete tabelrowdata_update.dictionarytype_description;
+        }else if((tabelrowdata_update.dictionarytype_description==null) && ($("#control_dictionarytype_description").val()=="")){
+            delete tabelrowdata_update.dictionarytype_description;
+        }else {
+            tabelrowdata_update.dictionarytype_description = $("#control_dictionarytype_description").val();
+        }
+        
+        if (tabelrowdata_update.dictionarytype_typeid == $("#control_dictionarytype_typeid").val()) {
+            delete tabelrowdata_update.dictionarytype_typeid;
+        }else if((tabelrowdata_update.dictionarytype_typeid==null) && ($("#control_dictionarytype_typeid").val()=="")){
+            delete tabelrowdata_update.dictionarytype_typeid;
+        }else {
+            tabelrowdata_update.dictionarytype_typeid = $("#control_dictionarytype_typeid").val();
+        }
+        
+        if (tabelrowdata_update.dictionarytype_updatetime == $("#control_dictionarytype_updatetime").val()) {
+            delete tabelrowdata_update.dictionarytype_updatetime;
+        }else if((tabelrowdata_update.dictionarytype_updatetime==null) && ($("#control_dictionarytype_updatetime").val()=="")){
+            delete tabelrowdata_update.dictionarytype_updatetime;
+        }else {
+            tabelrowdata_update.dictionarytype_updatetime = $("#control_dictionarytype_updatetime").val();
+        }
+        
+    }
+
+</script>
+
+
+    <!-- Modal 3 (Custom Width)-->
+    <div class="modal fade custom-width" id="modal-photo">
+        <div class="modal-dialog" style="width:80%;">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">图像处理</h4>
+                </div>
+
+                <div class="modal-body ">
+                    <img id="modal-photo-img" class="img-responsive" style="width:100%" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-info">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% end %}

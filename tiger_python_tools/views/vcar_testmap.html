@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title></title>
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/main1119.css"/>
+    <link rel="stylesheet" href="http://cache.amap.com/lbs/static/AMap.DrivingRender1120.css"/>
+    <style>
+        #container{
+            width:84%;
+            height: 100%;
+            position:relative;
+            overflow: hidden;
+            float: right;
+        }
+        #tool{
+            width: 16%;
+            height: 100%;
+            overflow: auto;
+            box-shadow:0 0 14px rgba(0,0,100,.2);
+            height: 100%;
+            background-color: white;
+            float: right;
+            z-index: 9999;
+        }
+    </style>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.6&key=3f106cab686aa907fae5d023cca93351&plugin=AMap.Driving,AMap.MouseTool,AMap.CircleEditor,AMap.PolyEditor,AMap.ToolBar"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/DrivingRender1230.js"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+</head>
+<body>
+ 
+<div id="container"></div>
+<div id="tool">
+    <center>
+        <button id="circle">画圆</button>
+        <button id="rectangle">矩形</button>
+        <button id="polygon">多边形</button>
+        <button id="closeMouse">清除</button>
+        <button id="testCircle">判断一个点是否在一个圆里</button>
+        <button id="testPolygon">判断一个点是否在一个多边形里</button>
+    </center>
+</div>
+<div id="panel">
+ 
+</div>
+<div style="height: 10%;float: left">
+</div>
+<script src="static/assets/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript">
+ 
+    var status;
+ 
+    var map = new AMap.Map("container", {
+        resizeEnable: true
+    });
+ 
+    map.plugin(["AMap.ToolBar"],function(){   //在地图中添加ToolBar插件
+        toolBar = new AMap.ToolBar();
+        map.addControl(toolBar);
+    });
+    toolBar.hide();
+ 
+    map.plugin(["AMap.MouseTool"],function(){        //鼠标工具插件
+        mousetool = new AMap.MouseTool(map);
+    });
+    $('#circle').click(function(){
+        status = 'circle';
+        mousetool.circle();
+    });
+    $('#rectangle').click(function(){
+        status = 'rectangle';
+        mousetool.rectangle();
+    });
+    $('#polygon').click(function(){
+        status = 'polygon';
+        mousetool.polygon();
+    });
+
+
+    AMap.event.addListener(mousetool, 'draw', function(e) {
+        //arr = e.obj.getPath();//获取路径坐标
+        if(status == 'circle'){
+            lng = e.obj.getCenter().lng;
+            lat = e.obj.getCenter().lat;
+            radius = e.obj.getRadius();
+            console.log(lng,lat,radius);
+        }else if(status == 'polygon' || status == 'rectangle'){
+            var path = e.obj.getPath();
+            arr = [];
+            for(var i=0;i<path.length;i++){
+                arr.push([path[i].lng,path[i].lat]);
+            }
+            console.log(arr);
+        }
+ 
+
+    });
+
+ 
+    $('#closeMouse').click(function(){
+        mousetool.close(true);
+    });
+ 
+    var lat;
+    var lng;
+    var radius;
+ 
+    $('#testCircle').click(function(){
+        var myLngLat = new AMap.LngLat(116.403984,39.907535);
+        var circle = new AMap.Circle({
+            center: new AMap.LngLat(lng,lat),// 圆心位置
+            radius: radius //半径
+        });
+        if(circle.contains(myLngLat)){
+            alert('在');
+        }else{
+            alert('不在');
+        }
+    });
+ 
+    var arr = [];
+ 
+ 
+    $('#testPolygon').click(function(){
+        var myLngLat = new AMap.LngLat(116.403984,39.907535);
+        // 定义一个多边形
+        var polygon = new AMap.Polygon({
+            path: arr
+        });
+ 
+        if(polygon.contains(myLngLat)){
+            alert('在');
+        }else{
+            alert('不在');
+        }
+    });
+</script>
+</body>
+</html>

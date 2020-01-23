@@ -1,0 +1,1735 @@
+﻿{% extends "layout_main.html" %}
+{% block body %}
+
+<!-- Imported styles on this page -->
+<link rel="stylesheet" href="assets/js/daterangepicker/daterangepicker-bs3.css">
+<link rel="stylesheet" href="assets/js/select2/select2.css">
+<link rel="stylesheet" href="assets/js/select2/select2-bootstrap.css">
+<link rel="stylesheet" href="assets/js/multiselect/css/multi-select.css">
+
+<!-- Bottom Scripts -->
+<script src="assets/js/moment.min.js"></script>
+
+<!-- Imported scripts on this page -->
+<script src="assets/js/daterangepicker/daterangepicker.js"></script>
+<script src="assets/js/datepicker/bootstrap-datepicker.js"></script>
+<script src="assets/js/timepicker/bootstrap-timepicker.min.js"></script>
+<script src="assets/js/colorpicker/bootstrap-colorpicker.min.js"></script>
+<script src="assets/js/select2/select2.min.js"></script>
+<script src="assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
+<script src="assets/js/tagsinput/bootstrap-tagsinput.min.js"></script>
+<script src="assets/js/typeahead.bundle.js"></script>
+<script src="assets/js/handlebars.min.js"></script>
+<script src="assets/js/multiselect/js/jquery.multi-select.js"></script>
+
+
+<script type="text/javascript">
+
+    function fieldimgupload(e) {
+        var myinputcontrolname = e.id;
+        var myvaluecontrolname = myinputcontrolname.substr(0, myinputcontrolname.lastIndexOf("_img_file"));
+        var myimgcontrolname = myvaluecontrolname + "_img";
+
+        var formData = new FormData();
+        formData.append('filedb', 'attach');
+        formData.append('file', e.files[0]);
+        $.ajax({
+            url: '/api/upload',
+            type: 'POST',
+            cache: false,
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function (data, status) {
+                if (typeof (data.code) != 'undefined') {
+                    if (data.code != "0") {
+                        //print error
+                        alert(data.code + data.message);
+                    } else {
+                        //clear
+                        $('#' + myvaluecontrolname).val(data.data.id);
+                        $('#' + myimgcontrolname).attr('src', '/api/download?filedb=attach&id=' + data.data.id +'&maxwidth=150');
+                    }
+                }
+            },
+            error: function (data, status, e) {
+                //这里
+                alert(e);
+            }
+        });
+        return false;
+    }
+
+    $(document).ready(function () {
+
+        $("#modal-photo-img").bind("click", function () {
+            $('#modal-photo').modal('hide');
+        });
+
+        $('.fieldfileimg').bind("click", function () {
+            //搜索按钮
+            var name1 = $(this).attr("id") + "_file";
+            var src = $(this).attr("src");
+            if (src.indexOf("nullimg") > 0) {
+            } else {
+                src = src.substr(0, src.indexOf("&maxwidth="));
+                $("#modal-photo-img").attr("src", src);
+                $('#modal-photo').modal('show');
+            }
+            //$("#" + name).click();
+            return false;
+        });
+
+        var myTable = $('#example').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "autoFill": true,
+            "autoWidth": true,
+            "scrollX": true,
+            "searching": false,
+            "ordering": true,
+            "ajax": {
+                "url": "/api/vehicle_view_api",
+                "type": "POST",
+                "data": function (d) {
+                    //添加额外的参数传给服务器
+                    d.posttype = "query";
+                    
+                    d.searchval_vehiclenumber = $("#searchval_vehiclenumber").val();    
+                    d.searchval_vehicledrivingpermit_inittime = $("#searchval_vehicledrivingpermit_inittime").val();                                         
+                    d.searchval_vehicleowner_name = $("#searchval_vehicleowner_name").val();           
+                }
+            },
+            "columns": [
+                
+                { "data": "vehiclenumber", "width": "80px" },
+                { "data": "vehiclevincode", "width": "80px" }, 
+                { "data": "vehicleenable", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_inittime", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_status", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_number", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_scan", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_goverment", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_starttime", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_endtime", "width": "80px" }, 
+                { "data": "vehicledrivingpermit_class", "width": "80px" }, 
+                { "data": "vehicleoperationpermit_number", "width": "80px" }, 
+                { "data": "vehicleoperationpermit_scan", "width": "80px" }, 
+                { "data": "vehicleoperationpermit_goverment", "width": "80px" }, 
+                { "data": "vehicleoperationpermit_starttime", "width": "80px" }, 
+                { "data": "vehicleoperationpermit_endtime", "width": "80px" }, 
+                { "data": "vehicleoperationpermit_class", "width": "80px" }, 
+                { "data": "vehicleservice_type", "width": "80px" }, 
+                { "data": "vehicleservicetype", "width": "80px" }, 
+                { "data": "vehicleseries", "width": "80px" }, 
+                { "data": "vehiclemodel", "width": "80px" }, 
+                { "data": "vehiclemanufacturer", "width": "80px" }, 
+                { "data": "vehiclecolor", "width": "80px" }, 
+                { "data": "vehiclefueltype", "width": "80px" }, 
+                { "data": "vehicleenginesize", "width": "80px" }, 
+                { "data": "vehiclebatterysize", "width": "80px" }, 
+                { "data": "vehiclewheelbase", "width": "80px" }, 
+                { "data": "vehiclefullweight", "width": "80px" }, 
+                { "data": "vehiclefullpoerson", "width": "80px" }, 
+                { "data": "vehicleloadweight", "width": "80px" }, 
+                { "data": "vehiclephotofront", "width": "80px" }, 
+                { "data": "vehiclephotoside", "width": "80px" }, 
+                { "data": "vehiclephotoback", "width": "80px" }, 
+                { "data": "vehiclegps_installtime", "width": "80px" }, 
+                { "data": "vehiclegps_manufacturer", "width": "80px" }, 
+                { "data": "vehiclegps_model", "width": "80px" }, 
+                { "data": "vehiclegps_deviceid", "width": "80px" }, 
+                { "data": "vehicleprint_manufacturer", "width": "80px" }, 
+                { "data": "vehicleprint_model", "width": "80px" }, 
+                { "data": "vehicleprint_deviceid", "width": "80px" }, 
+                { "data": "vehicledescription", "width": "80px" }, 
+                { "data": "vehiclesignin_address", "width": "80px" }, 
+                { "data": "vehicleprint_time", "width": "80px" }, 
+                { "data": "vehicleowner_name", "width": "80px" }, 
+                { "data": "vehicleowner_cardid", "width": "80px" }, 
+                { "data": "vehicleowner_phone", "width": "80px" }, 
+                { "data": "vehicleowner_company_name", "width": "80px" }, 
+                { "data": "vehicleowner_company_cardid", "width": "80px" }, 
+                { "data": "vehicleowner_company_phone", "width": "80px" }, 
+                { "data": "vehiclebelongplat", "width": "80px" }, 
+                { "data": "vehiclebelongplat_child", "width": "80px" }, 
+                { "data": "vehiclemaster_name", "width": "80px" }, 
+                { "data": "vehiclemaster_cardid", "width": "80px" }, 
+
+            ]
+        });
+
+        $('#b_query').click(function () {
+            //搜索按钮
+            $("#example").dataTable().fnDraw(false);
+            return false;
+        });
+
+        $('#b_new').click(function () {
+            //添加按钮
+            var rowdata = {
+                vehicleid: null,
+                vehiclenumber: null,
+            };
+
+            var urowdata=JSON.parse(JSON.stringify(rowdata));
+
+            setupdateformdata(urowdata);
+            $('#modal-update').modal('show', { backdrop: 'static' });
+
+            return false;
+        });
+
+
+        $('#btn_confirmupdatemodal').click(function () {
+            //确认modal按钮
+            pushupdateformdata();
+            var posttype = "update";
+            if (tabelrowdata_update.vehicleid==null) posttype="insert"
+
+            $.ajax({
+                type: 'POST',
+                url: "/api/vehicle_view_api",
+                data: { posttype: posttype, updaterowdata: tabelrowdata_update},
+                success: function (data) {
+                    $("#example").dataTable().fnDraw(false);
+                },
+                dataType: "text"
+            });
+
+
+        });
+
+        $('#btn_deleteupdatemodal').click(function () {
+            //删除modal按钮
+            var result = confirm('是否删除！');
+            if (result) {
+            } else {
+                return false;
+            }
+            pushupdateformdata();
+            var posttype = "delete";
+            if (tabelrowdata_update.vehicleid==null) return;
+            $.ajax({
+                type: 'POST',
+                url: "/api/vehicle_view_api",
+                data: { posttype: posttype, updaterowdata: tabelrowdata_update},
+                success: function (data) {
+                    $("#example").dataTable().fnDraw(false);
+                },
+                dataType: "text"
+            });
+
+
+        });
+
+
+        $('#example tbody').on('click', 'tr', function () {
+            var table = $('#example').DataTable();
+            console.log(table.row(this).data());
+            var rowdata = table.row(this).data();
+
+            var urowdata=JSON.parse(JSON.stringify(rowdata));
+            setupdateformdata(urowdata);
+            $('#modal-update').modal('show', { backdrop: 'static' });
+        });
+
+        if ($.isFunction($.fn.daterangepicker)) {
+            $(".daterange").each(function (i, el) {
+                // Change the range as you desire
+                var ranges = {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                    'Last 7 Days': [moment().subtract('days', 6), moment()],
+                    'Last 30 Days': [moment().subtract('days', 29), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+                };
+
+                var $this = $(el),
+                    opts = {
+                        format: attrDefault($this, 'format', 'MM/DD/YYYY'),
+                        timePicker: attrDefault($this, 'timePicker', false),
+                        timePickerIncrement: attrDefault($this, 'timePickerIncrement', false),
+                        separator: attrDefault($this, 'separator', ' - '),
+                    },
+                    min_date = attrDefault($this, 'minDate', ''),
+                    max_date = attrDefault($this, 'maxDate', ''),
+                    start_date = attrDefault($this, 'startDate', ''),
+                    end_date = attrDefault($this, 'endDate', '');
+
+                if ($this.hasClass('add-ranges')) {
+                    opts['ranges'] = ranges;
+                }
+
+                if (min_date.length) {
+                    opts['minDate'] = min_date;
+                }
+
+                if (max_date.length) {
+                    opts['maxDate'] = max_date;
+                }
+
+                if (start_date.length) {
+                    opts['startDate'] = start_date;
+                }
+
+                if (end_date.length) {
+                    opts['endDate'] = end_date;
+                }
+
+
+                $this.daterangepicker(opts, function (start, end) {
+                    var drp = $this.data('daterangepicker');
+
+                    if ($this.is('[data-callback]')) {
+                        //daterange_callback(start, end);
+                        callback_test(start, end);
+                    }
+
+                    if ($this.hasClass('daterange-inline')) {
+                        $this.find('span').html(start.format(drp.format) + drp.separator + end.format(drp.format));
+                    }
+                });
+
+                if (typeof opts['ranges'] == 'object') {
+                    $this.data('daterangepicker').container.removeClass('show-calendar');
+                }
+            });
+        }
+    });
+
+</script>
+
+<div class="row">
+
+
+    <div class="col-md-2">
+        <div class="form-group">
+            车牌号（可以为空，未上牌状态）：<input type="text" id="searchval_vehiclenumber"    />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            车辆上牌时间：<input type="text" id="searchval_vehicledrivingpermit_inittime"  class="daterange"    />
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="form-group">
+            车辆所有人：<input type="text" id="searchval_vehicleowner_name"    />
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="form-group">
+            <button id="b_query" class="btn btn-secondary">查询</button>
+            <button id="b_new" class="btn btn-orange">新增</button>
+
+        </div>
+    </div>
+</div>
+<div>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                
+                <th>车牌号（可以为空，未上牌状态）</th>
+                <th>车辆VIN码</th>
+                <th>车辆有效</th>
+                <th>车辆上牌时间</th>
+                <th>车辆年审状态</th>
+                <th>车辆行驶证编号</th>
+                <th>车辆行驶证扫描件文件名</th>
+                <th>车辆行驶证颁发机构</th>
+                <th>车辆行驶证有效期起</th>
+                <th>车辆行驶证有效截止</th>
+                <th>车辆行驶证车辆分类</th>
+                <th>车辆运营证编号</th>
+                <th>车辆运营证扫描件文件名</th>
+                <th>车辆运营证颁发机构</th>
+                <th>车辆运营证有效期起</th>
+                <th>车辆运营证有效截止</th>
+                <th>车辆属性自营挂靠其他</th>
+                <th>车辆服务类型（网约车，出租车，线路车，私人小汽车，货运车，施工机械）</th>
+                <th>车辆服务性质（自营，托管，其他）</th>
+                <th>车型系列</th>
+                <th>车型型号</th>
+                <th>车辆生产厂家</th>
+                <th>车辆颜色</th>
+                <th>车辆燃料类型（汽油，柴油，天然气，液化气，电动，混动，其他）</th>
+                <th>车辆发动机排量</th>
+                <th>车辆新能源电池容量</th>
+                <th>车辆轴距</th>
+                <th>车辆整备质量</th>
+                <th>车辆额定人数</th>
+                <th>车辆载重量</th>
+                <th>车辆照片正面文件名</th>
+                <th>车辆照片侧面文件名</th>
+                <th>车辆照片尾部文件名</th>
+                <th>车辆监控设备安装日期</th>
+                <th>车辆监控设备厂家</th>
+                <th>车辆监控设备型号</th>
+                <th>车辆监控设别序列号</th>
+                <th>车辆发票打印设备厂家</th>
+                <th>车辆发票打印设备型号</th>
+                <th>车辆发票打印设备序列号</th>
+                <th>车辆描述</th>
+                <th>车辆注册地</th>
+                <th>车辆注册日期</th>
+                <th>车辆所有人</th>
+                <th>车辆所有人身份证号码</th>
+                <th>车辆所有人电话号码</th>
+                <th>车辆所有公司</th>
+                <th>车辆所有公司组织代码</th>
+                <th>车辆所有公司电话号码</th>
+                <th>车辆所属平台公司</th>
+                <th>车辆所属平台分公司</th>
+                <th>车辆指定责任人姓名（可以是车主本人）</th>
+                <th>车辆指定责任人身份证</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                
+                <th>车牌号（可以为空，未上牌状态）</th>
+                <th>车辆VIN码</th>
+                <th>车辆有效</th>
+                <th>车辆上牌时间</th>
+                <th>车辆年审状态</th>
+                <th>车辆行驶证编号</th>
+                <th>车辆行驶证扫描件文件名</th>
+                <th>车辆行驶证颁发机构</th>
+                <th>车辆行驶证有效期起</th>
+                <th>车辆行驶证有效截止</th>
+                <th>车辆行驶证车辆分类</th>
+                <th>车辆运营证编号</th>
+                <th>车辆运营证扫描件文件名</th>
+                <th>车辆运营证颁发机构</th>
+                <th>车辆运营证有效期起</th>
+                <th>车辆运营证有效截止</th>
+                <th>车辆属性自营挂靠其他</th>
+                <th>车辆服务类型（网约车，出租车，线路车，私人小汽车，货运车，施工机械）</th>
+                <th>车辆服务性质（自营，托管，其他）</th>
+                <th>车型系列</th>
+                <th>车型型号</th>
+                <th>车辆生产厂家</th>
+                <th>车辆颜色</th>
+                <th>车辆燃料类型（汽油，柴油，天然气，液化气，电动，混动，其他）</th>
+                <th>车辆发动机排量</th>
+                <th>车辆新能源电池容量</th>
+                <th>车辆轴距</th>
+                <th>车辆整备质量</th>
+                <th>车辆额定人数</th>
+                <th>车辆载重量</th>
+                <th>车辆照片正面文件名</th>
+                <th>车辆照片侧面文件名</th>
+                <th>车辆照片尾部文件名</th>
+                <th>车辆监控设备安装日期</th>
+                <th>车辆监控设备厂家</th>
+                <th>车辆监控设备型号</th>
+                <th>车辆监控设别序列号</th>
+                <th>车辆发票打印设备厂家</th>
+                <th>车辆发票打印设备型号</th>
+                <th>车辆发票打印设备序列号</th>
+                <th>车辆描述</th>
+                <th>车辆注册地</th>
+                <th>车辆注册日期</th>
+                <th>车辆所有人</th>
+                <th>车辆所有人身份证号码</th>
+                <th>车辆所有人电话号码</th>
+                <th>车辆所有公司</th>
+                <th>车辆所有公司组织代码</th>
+                <th>车辆所有公司电话号码</th>
+                <th>车辆所属平台公司</th>
+                <th>车辆所属平台分公司</th>
+                <th>车辆指定责任人姓名（可以是车主本人）</th>
+                <th>车辆指定责任人身份证</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+
+<div class="page-loading-overlay">
+    <div class="loader-2"></div>
+</div>
+
+
+{% end %}
+
+
+
+{% block footer %}
+
+    <!-- Modal 6 (Long Modal)覆盖在上层-->
+    <div class="modal fade" id="modal-update">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">车辆</h4>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#tab1" data-toggle="tab">
+                                <span>基本信息</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab2" data-toggle="tab">
+                                <span>扩展信息</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab3" data-toggle="tab">
+                                <span>关键项</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab4" data-toggle="tab">
+                                <span>可选项</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content scrollable" data-max-height="330">
+                        <div class="tab-pane  active" id="tab1">
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车牌号（可以为空，未上牌状态）</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclenumber" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆VIN码</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclevincode" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆有效</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleenable" type="checkbox" class="form-control  cbr  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆上牌时间</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_inittime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆年审状态</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_status" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆行驶证编号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_number" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆行驶证扫描件文件名</div>
+                                
+                                <div class="col-md-8 ">
+                                    <input id="control_vehicledrivingpermit_scan_img_file" type="file" class="form-control fieldfileimg_input" onchange="fieldimgupload(this);" />
+                                    <input id="control_vehicledrivingpermit_scan" type="text" class="form-control  " style="display:none" />
+                                    <img id="control_vehicledrivingpermit_scan_img" class="fieldfileimg" src="" />
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆行驶证颁发机构</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_goverment" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆行驶证有效期起</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_starttime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆行驶证有效截止</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_endtime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆行驶证车辆分类</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledrivingpermit_class" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆运营证编号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleoperationpermit_number" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆运营证扫描件文件名</div>
+                                
+                                <div class="col-md-8 ">
+                                    <input id="control_vehicleoperationpermit_scan_img_file" type="file" class="form-control fieldfileimg_input" onchange="fieldimgupload(this);" />
+                                    <input id="control_vehicleoperationpermit_scan" type="text" class="form-control  " style="display:none" />
+                                    <img id="control_vehicleoperationpermit_scan_img" class="fieldfileimg" src="" />
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆运营证颁发机构</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleoperationpermit_goverment" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆运营证有效期起</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleoperationpermit_starttime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆运营证有效截止</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleoperationpermit_endtime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆属性自营挂靠其他</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleoperationpermit_class" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆服务类型（网约车，出租车，线路车，私人小汽车，货运车，施工机械）</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleservice_type" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆服务性质（自营，托管，其他）</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleservicetype" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车型系列</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleseries" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车型型号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclemodel" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆生产厂家</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclemanufacturer" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆颜色</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclecolor" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆燃料类型（汽油，柴油，天然气，液化气，电动，混动，其他）</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclefueltype" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆发动机排量</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleenginesize" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆新能源电池容量</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclebatterysize" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆轴距</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclewheelbase" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆整备质量</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclefullweight" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆额定人数</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclefullpoerson" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆载重量</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleloadweight" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆照片正面文件名</div>
+                                
+                                <div class="col-md-8 ">
+                                    <input id="control_vehiclephotofront_img_file" type="file" class="form-control fieldfileimg_input" onchange="fieldimgupload(this);" />
+                                    <input id="control_vehiclephotofront" type="text" class="form-control  " style="display:none" />
+                                    <img id="control_vehiclephotofront_img" class="fieldfileimg" src="" />
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆照片侧面文件名</div>
+                                
+                                <div class="col-md-8 ">
+                                    <input id="control_vehiclephotoside_img_file" type="file" class="form-control fieldfileimg_input" onchange="fieldimgupload(this);" />
+                                    <input id="control_vehiclephotoside" type="text" class="form-control  " style="display:none" />
+                                    <img id="control_vehiclephotoside_img" class="fieldfileimg" src="" />
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆照片尾部文件名</div>
+                                
+                                <div class="col-md-8 ">
+                                    <input id="control_vehiclephotoback_img_file" type="file" class="form-control fieldfileimg_input" onchange="fieldimgupload(this);" />
+                                    <input id="control_vehiclephotoback" type="text" class="form-control  " style="display:none" />
+                                    <img id="control_vehiclephotoback_img" class="fieldfileimg" src="" />
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆监控设备安装日期</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclegps_installtime" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆监控设备厂家</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclegps_manufacturer" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆监控设备型号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclegps_model" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆监控设别序列号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclegps_deviceid" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆发票打印设备厂家</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleprint_manufacturer" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆发票打印设备型号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleprint_model" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆发票打印设备序列号</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleprint_deviceid" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆描述</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicledescription" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆注册地</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclesignin_address" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆注册日期</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleprint_time" type="text" class="form-control  datepicker "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所有人</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleowner_name" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所有人身份证号码</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleowner_cardid" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所有人电话号码</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleowner_phone" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所有公司</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleowner_company_name" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所有公司组织代码</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleowner_company_cardid" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所有公司电话号码</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehicleowner_company_phone" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所属平台公司</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclebelongplat" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆所属平台分公司</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclebelongplat_child" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆指定责任人姓名（可以是车主本人）</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclemaster_name" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆指定责任人身份证</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclemaster_cardid" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+                            <div class="row">
+                                <div class="col-md-4 " style="text-align:right">车辆指定责任人电话号码</div>
+                                
+                                <div class="col-md-8 "><input id="control_vehiclemaster_phone" type="text" class="form-control  "   /></div>
+                                
+                            </div>
+                            
+                            
+
+
+                        </div>
+
+                        <div class="tab-pane" id="tab2">
+                        </div>
+                        <div class="tab-pane" id="tab3">
+                        </div>
+                        <div class="tab-pane" id="tab4">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btn_confirmupdatemodal" data-dismiss="modal" class="btn btn-info">保存数据</button>
+                    <button type="button" id="btn_deleteupdatemodal" data-dismiss="modal" class="btn btn-info">删除</button>
+                    <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript">
+
+    function resetFileInput(file) {
+        file.after(file.clone().val(""));
+        file.remove();
+    }
+
+    var tabelrowdata_update=null;
+
+    function setupdateformdata(data)
+    {
+        tabelrowdata_update=data;
+        
+        
+        $("#control_vehiclenumber").val("");
+        $("#control_vehiclenumber").val(data.vehiclenumber);
+        
+        
+        
+        $("#control_vehiclevincode").val("");
+        $("#control_vehiclevincode").val(data.vehiclevincode);
+        
+        
+        
+        $("#control_vehicleenable").prop("checked", false);
+        $("#control_vehicleenable").prop("checked", data.vehicleenable);
+        
+        
+        
+        $("#control_vehicledrivingpermit_inittime").val("");
+        $("#control_vehicledrivingpermit_inittime").val(data.vehicledrivingpermit_inittime);
+        
+        
+        
+        $("#control_vehicledrivingpermit_status").val("");
+        $("#control_vehicledrivingpermit_status").val(data.vehicledrivingpermit_status);
+        
+        
+        
+        $("#control_vehicledrivingpermit_number").val("");
+        $("#control_vehicledrivingpermit_number").val(data.vehicledrivingpermit_number);
+        
+        
+        
+        $("#control_vehicledrivingpermit_scan").val("");
+        $("#control_vehicledrivingpermit_scan").val(data.vehicledrivingpermit_scan);
+        resetFileInput($("#control_vehicledrivingpermit_scan_img_file"))//清空file
+        $("#control_vehicledrivingpermit_scan_img").attr("src", "/images/nullimg.png");//清空img
+        if (data.vehicledrivingpermit_scan != null)
+            if (data.vehicledrivingpermit_scan != "")
+                $("#control_vehicledrivingpermit_scan_img").attr("src", "/api/download?filedb=attach&id=" + data.vehicledrivingpermit_scan +"&maxwidth=150");
+        
+        
+        
+        $("#control_vehicledrivingpermit_goverment").val("");
+        $("#control_vehicledrivingpermit_goverment").val(data.vehicledrivingpermit_goverment);
+        
+        
+        
+        $("#control_vehicledrivingpermit_starttime").val("");
+        $("#control_vehicledrivingpermit_starttime").val(data.vehicledrivingpermit_starttime);
+        
+        
+        
+        $("#control_vehicledrivingpermit_endtime").val("");
+        $("#control_vehicledrivingpermit_endtime").val(data.vehicledrivingpermit_endtime);
+        
+        
+        
+        $("#control_vehicledrivingpermit_class").val("");
+        $("#control_vehicledrivingpermit_class").val(data.vehicledrivingpermit_class);
+        
+        
+        
+        $("#control_vehicleoperationpermit_number").val("");
+        $("#control_vehicleoperationpermit_number").val(data.vehicleoperationpermit_number);
+        
+        
+        
+        $("#control_vehicleoperationpermit_scan").val("");
+        $("#control_vehicleoperationpermit_scan").val(data.vehicleoperationpermit_scan);
+        resetFileInput($("#control_vehicleoperationpermit_scan_img_file"))//清空file
+        $("#control_vehicleoperationpermit_scan_img").attr("src", "/images/nullimg.png");//清空img
+        if (data.vehicleoperationpermit_scan != null)
+            if (data.vehicleoperationpermit_scan != "")
+                $("#control_vehicleoperationpermit_scan_img").attr("src", "/api/download?filedb=attach&id=" + data.vehicleoperationpermit_scan +"&maxwidth=150");
+        
+        
+        
+        $("#control_vehicleoperationpermit_goverment").val("");
+        $("#control_vehicleoperationpermit_goverment").val(data.vehicleoperationpermit_goverment);
+        
+        
+        
+        $("#control_vehicleoperationpermit_starttime").val("");
+        $("#control_vehicleoperationpermit_starttime").val(data.vehicleoperationpermit_starttime);
+        
+        
+        
+        $("#control_vehicleoperationpermit_endtime").val("");
+        $("#control_vehicleoperationpermit_endtime").val(data.vehicleoperationpermit_endtime);
+        
+        
+        
+        $("#control_vehicleoperationpermit_class").val("");
+        $("#control_vehicleoperationpermit_class").val(data.vehicleoperationpermit_class);
+        
+        
+        
+        $("#control_vehicleservice_type").val("");
+        $("#control_vehicleservice_type").val(data.vehicleservice_type);
+        
+        
+        
+        $("#control_vehicleservicetype").val("");
+        $("#control_vehicleservicetype").val(data.vehicleservicetype);
+        
+        
+        
+        $("#control_vehicleseries").val("");
+        $("#control_vehicleseries").val(data.vehicleseries);
+        
+        
+        
+        $("#control_vehiclemodel").val("");
+        $("#control_vehiclemodel").val(data.vehiclemodel);
+        
+        
+        
+        $("#control_vehiclemanufacturer").val("");
+        $("#control_vehiclemanufacturer").val(data.vehiclemanufacturer);
+        
+        
+        
+        $("#control_vehiclecolor").val("");
+        $("#control_vehiclecolor").val(data.vehiclecolor);
+        
+        
+        
+        $("#control_vehiclefueltype").val("");
+        $("#control_vehiclefueltype").val(data.vehiclefueltype);
+        
+        
+        
+        $("#control_vehicleenginesize").val("");
+        $("#control_vehicleenginesize").val(data.vehicleenginesize);
+        
+        
+        
+        $("#control_vehiclebatterysize").val("");
+        $("#control_vehiclebatterysize").val(data.vehiclebatterysize);
+        
+        
+        
+        $("#control_vehiclewheelbase").val("");
+        $("#control_vehiclewheelbase").val(data.vehiclewheelbase);
+        
+        
+        
+        $("#control_vehiclefullweight").val("");
+        $("#control_vehiclefullweight").val(data.vehiclefullweight);
+        
+        
+        
+        $("#control_vehiclefullpoerson").val("");
+        $("#control_vehiclefullpoerson").val(data.vehiclefullpoerson);
+        
+        
+        
+        $("#control_vehicleloadweight").val("");
+        $("#control_vehicleloadweight").val(data.vehicleloadweight);
+        
+        
+        
+        $("#control_vehiclephotofront").val("");
+        $("#control_vehiclephotofront").val(data.vehiclephotofront);
+        resetFileInput($("#control_vehiclephotofront_img_file"))//清空file
+        $("#control_vehiclephotofront_img").attr("src", "/images/nullimg.png");//清空img
+        if (data.vehiclephotofront != null)
+            if (data.vehiclephotofront != "")
+                $("#control_vehiclephotofront_img").attr("src", "/api/download?filedb=attach&id=" + data.vehiclephotofront +"&maxwidth=150");
+        
+        
+        
+        $("#control_vehiclephotoside").val("");
+        $("#control_vehiclephotoside").val(data.vehiclephotoside);
+        resetFileInput($("#control_vehiclephotoside_img_file"))//清空file
+        $("#control_vehiclephotoside_img").attr("src", "/images/nullimg.png");//清空img
+        if (data.vehiclephotoside != null)
+            if (data.vehiclephotoside != "")
+                $("#control_vehiclephotoside_img").attr("src", "/api/download?filedb=attach&id=" + data.vehiclephotoside +"&maxwidth=150");
+        
+        
+        
+        $("#control_vehiclephotoback").val("");
+        $("#control_vehiclephotoback").val(data.vehiclephotoback);
+        resetFileInput($("#control_vehiclephotoback_img_file"))//清空file
+        $("#control_vehiclephotoback_img").attr("src", "/images/nullimg.png");//清空img
+        if (data.vehiclephotoback != null)
+            if (data.vehiclephotoback != "")
+                $("#control_vehiclephotoback_img").attr("src", "/api/download?filedb=attach&id=" + data.vehiclephotoback +"&maxwidth=150");
+        
+        
+        
+        $("#control_vehiclegps_installtime").val("");
+        $("#control_vehiclegps_installtime").val(data.vehiclegps_installtime);
+        
+        
+        
+        $("#control_vehiclegps_manufacturer").val("");
+        $("#control_vehiclegps_manufacturer").val(data.vehiclegps_manufacturer);
+        
+        
+        
+        $("#control_vehiclegps_model").val("");
+        $("#control_vehiclegps_model").val(data.vehiclegps_model);
+        
+        
+        
+        $("#control_vehiclegps_deviceid").val("");
+        $("#control_vehiclegps_deviceid").val(data.vehiclegps_deviceid);
+        
+        
+        
+        $("#control_vehicleprint_manufacturer").val("");
+        $("#control_vehicleprint_manufacturer").val(data.vehicleprint_manufacturer);
+        
+        
+        
+        $("#control_vehicleprint_model").val("");
+        $("#control_vehicleprint_model").val(data.vehicleprint_model);
+        
+        
+        
+        $("#control_vehicleprint_deviceid").val("");
+        $("#control_vehicleprint_deviceid").val(data.vehicleprint_deviceid);
+        
+        
+        
+        $("#control_vehicledescription").val("");
+        $("#control_vehicledescription").val(data.vehicledescription);
+        
+        
+        
+        $("#control_vehiclesignin_address").val("");
+        $("#control_vehiclesignin_address").val(data.vehiclesignin_address);
+        
+        
+        
+        $("#control_vehicleprint_time").val("");
+        $("#control_vehicleprint_time").val(data.vehicleprint_time);
+        
+        
+        
+        $("#control_vehicleowner_name").val("");
+        $("#control_vehicleowner_name").val(data.vehicleowner_name);
+        
+        
+        
+        $("#control_vehicleowner_cardid").val("");
+        $("#control_vehicleowner_cardid").val(data.vehicleowner_cardid);
+        
+        
+        
+        $("#control_vehicleowner_phone").val("");
+        $("#control_vehicleowner_phone").val(data.vehicleowner_phone);
+        
+        
+        
+        $("#control_vehicleowner_company_name").val("");
+        $("#control_vehicleowner_company_name").val(data.vehicleowner_company_name);
+        
+        
+        
+        $("#control_vehicleowner_company_cardid").val("");
+        $("#control_vehicleowner_company_cardid").val(data.vehicleowner_company_cardid);
+        
+        
+        
+        $("#control_vehicleowner_company_phone").val("");
+        $("#control_vehicleowner_company_phone").val(data.vehicleowner_company_phone);
+        
+        
+        
+        $("#control_vehiclebelongplat").val("");
+        $("#control_vehiclebelongplat").val(data.vehiclebelongplat);
+        
+        
+        
+        $("#control_vehiclebelongplat_child").val("");
+        $("#control_vehiclebelongplat_child").val(data.vehiclebelongplat_child);
+        
+        
+        
+        $("#control_vehiclemaster_name").val("");
+        $("#control_vehiclemaster_name").val(data.vehiclemaster_name);
+        
+        
+        
+        $("#control_vehiclemaster_cardid").val("");
+        $("#control_vehiclemaster_cardid").val(data.vehiclemaster_cardid);
+        
+        
+    }
+
+    function pushupdateformdata()
+    {
+        if (tabelrowdata_update==null) return;
+
+        
+        if (tabelrowdata_update.vehiclenumber == $("#control_vehiclenumber").val()) {
+            delete tabelrowdata_update.vehiclenumber;
+        }else if((tabelrowdata_update.vehiclenumber==null) && ($("#control_vehiclenumber").val()=="")){
+            delete tabelrowdata_update.vehiclenumber;
+        }else {
+            tabelrowdata_update.vehiclenumber = $("#control_vehiclenumber").val();
+        }
+        
+        if (tabelrowdata_update.vehiclevincode == $("#control_vehiclevincode").val()) {
+            delete tabelrowdata_update.vehiclevincode;
+        }else if((tabelrowdata_update.vehiclevincode==null) && ($("#control_vehiclevincode").val()=="")){
+            delete tabelrowdata_update.vehiclevincode;
+        }else {
+            tabelrowdata_update.vehiclevincode = $("#control_vehiclevincode").val();
+        }
+        
+        if (tabelrowdata_update.vehicleenable == $("#control_vehicleenable").prop("checked")) {
+            delete tabelrowdata_update.vehicleenable;
+        } else {
+            tabelrowdata_update.vehicleenable = $("#control_vehicleenable").prop("checked");
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_inittime == $("#control_vehicledrivingpermit_inittime").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_inittime;
+        }else if((tabelrowdata_update.vehicledrivingpermit_inittime==null) && ($("#control_vehicledrivingpermit_inittime").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_inittime;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_inittime = $("#control_vehicledrivingpermit_inittime").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_status == $("#control_vehicledrivingpermit_status").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_status;
+        }else if((tabelrowdata_update.vehicledrivingpermit_status==null) && ($("#control_vehicledrivingpermit_status").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_status;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_status = $("#control_vehicledrivingpermit_status").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_number == $("#control_vehicledrivingpermit_number").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_number;
+        }else if((tabelrowdata_update.vehicledrivingpermit_number==null) && ($("#control_vehicledrivingpermit_number").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_number;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_number = $("#control_vehicledrivingpermit_number").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_scan == $("#control_vehicledrivingpermit_scan").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_scan;
+        }else if((tabelrowdata_update.vehicledrivingpermit_scan==null) && ($("#control_vehicledrivingpermit_scan").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_scan;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_scan = $("#control_vehicledrivingpermit_scan").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_goverment == $("#control_vehicledrivingpermit_goverment").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_goverment;
+        }else if((tabelrowdata_update.vehicledrivingpermit_goverment==null) && ($("#control_vehicledrivingpermit_goverment").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_goverment;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_goverment = $("#control_vehicledrivingpermit_goverment").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_starttime == $("#control_vehicledrivingpermit_starttime").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_starttime;
+        }else if((tabelrowdata_update.vehicledrivingpermit_starttime==null) && ($("#control_vehicledrivingpermit_starttime").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_starttime;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_starttime = $("#control_vehicledrivingpermit_starttime").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_endtime == $("#control_vehicledrivingpermit_endtime").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_endtime;
+        }else if((tabelrowdata_update.vehicledrivingpermit_endtime==null) && ($("#control_vehicledrivingpermit_endtime").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_endtime;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_endtime = $("#control_vehicledrivingpermit_endtime").val();
+        }
+        
+        if (tabelrowdata_update.vehicledrivingpermit_class == $("#control_vehicledrivingpermit_class").val()) {
+            delete tabelrowdata_update.vehicledrivingpermit_class;
+        }else if((tabelrowdata_update.vehicledrivingpermit_class==null) && ($("#control_vehicledrivingpermit_class").val()=="")){
+            delete tabelrowdata_update.vehicledrivingpermit_class;
+        }else {
+            tabelrowdata_update.vehicledrivingpermit_class = $("#control_vehicledrivingpermit_class").val();
+        }
+        
+        if (tabelrowdata_update.vehicleoperationpermit_number == $("#control_vehicleoperationpermit_number").val()) {
+            delete tabelrowdata_update.vehicleoperationpermit_number;
+        }else if((tabelrowdata_update.vehicleoperationpermit_number==null) && ($("#control_vehicleoperationpermit_number").val()=="")){
+            delete tabelrowdata_update.vehicleoperationpermit_number;
+        }else {
+            tabelrowdata_update.vehicleoperationpermit_number = $("#control_vehicleoperationpermit_number").val();
+        }
+        
+        if (tabelrowdata_update.vehicleoperationpermit_scan == $("#control_vehicleoperationpermit_scan").val()) {
+            delete tabelrowdata_update.vehicleoperationpermit_scan;
+        }else if((tabelrowdata_update.vehicleoperationpermit_scan==null) && ($("#control_vehicleoperationpermit_scan").val()=="")){
+            delete tabelrowdata_update.vehicleoperationpermit_scan;
+        }else {
+            tabelrowdata_update.vehicleoperationpermit_scan = $("#control_vehicleoperationpermit_scan").val();
+        }
+        
+        if (tabelrowdata_update.vehicleoperationpermit_goverment == $("#control_vehicleoperationpermit_goverment").val()) {
+            delete tabelrowdata_update.vehicleoperationpermit_goverment;
+        }else if((tabelrowdata_update.vehicleoperationpermit_goverment==null) && ($("#control_vehicleoperationpermit_goverment").val()=="")){
+            delete tabelrowdata_update.vehicleoperationpermit_goverment;
+        }else {
+            tabelrowdata_update.vehicleoperationpermit_goverment = $("#control_vehicleoperationpermit_goverment").val();
+        }
+        
+        if (tabelrowdata_update.vehicleoperationpermit_starttime == $("#control_vehicleoperationpermit_starttime").val()) {
+            delete tabelrowdata_update.vehicleoperationpermit_starttime;
+        }else if((tabelrowdata_update.vehicleoperationpermit_starttime==null) && ($("#control_vehicleoperationpermit_starttime").val()=="")){
+            delete tabelrowdata_update.vehicleoperationpermit_starttime;
+        }else {
+            tabelrowdata_update.vehicleoperationpermit_starttime = $("#control_vehicleoperationpermit_starttime").val();
+        }
+        
+        if (tabelrowdata_update.vehicleoperationpermit_endtime == $("#control_vehicleoperationpermit_endtime").val()) {
+            delete tabelrowdata_update.vehicleoperationpermit_endtime;
+        }else if((tabelrowdata_update.vehicleoperationpermit_endtime==null) && ($("#control_vehicleoperationpermit_endtime").val()=="")){
+            delete tabelrowdata_update.vehicleoperationpermit_endtime;
+        }else {
+            tabelrowdata_update.vehicleoperationpermit_endtime = $("#control_vehicleoperationpermit_endtime").val();
+        }
+        
+        if (tabelrowdata_update.vehicleoperationpermit_class == $("#control_vehicleoperationpermit_class").val()) {
+            delete tabelrowdata_update.vehicleoperationpermit_class;
+        }else if((tabelrowdata_update.vehicleoperationpermit_class==null) && ($("#control_vehicleoperationpermit_class").val()=="")){
+            delete tabelrowdata_update.vehicleoperationpermit_class;
+        }else {
+            tabelrowdata_update.vehicleoperationpermit_class = $("#control_vehicleoperationpermit_class").val();
+        }
+        
+        if (tabelrowdata_update.vehicleservice_type == $("#control_vehicleservice_type").val()) {
+            delete tabelrowdata_update.vehicleservice_type;
+        }else if((tabelrowdata_update.vehicleservice_type==null) && ($("#control_vehicleservice_type").val()=="")){
+            delete tabelrowdata_update.vehicleservice_type;
+        }else {
+            tabelrowdata_update.vehicleservice_type = $("#control_vehicleservice_type").val();
+        }
+        
+        if (tabelrowdata_update.vehicleservicetype == $("#control_vehicleservicetype").val()) {
+            delete tabelrowdata_update.vehicleservicetype;
+        }else if((tabelrowdata_update.vehicleservicetype==null) && ($("#control_vehicleservicetype").val()=="")){
+            delete tabelrowdata_update.vehicleservicetype;
+        }else {
+            tabelrowdata_update.vehicleservicetype = $("#control_vehicleservicetype").val();
+        }
+        
+        if (tabelrowdata_update.vehicleseries == $("#control_vehicleseries").val()) {
+            delete tabelrowdata_update.vehicleseries;
+        }else if((tabelrowdata_update.vehicleseries==null) && ($("#control_vehicleseries").val()=="")){
+            delete tabelrowdata_update.vehicleseries;
+        }else {
+            tabelrowdata_update.vehicleseries = $("#control_vehicleseries").val();
+        }
+        
+        if (tabelrowdata_update.vehiclemodel == $("#control_vehiclemodel").val()) {
+            delete tabelrowdata_update.vehiclemodel;
+        }else if((tabelrowdata_update.vehiclemodel==null) && ($("#control_vehiclemodel").val()=="")){
+            delete tabelrowdata_update.vehiclemodel;
+        }else {
+            tabelrowdata_update.vehiclemodel = $("#control_vehiclemodel").val();
+        }
+        
+        if (tabelrowdata_update.vehiclemanufacturer == $("#control_vehiclemanufacturer").val()) {
+            delete tabelrowdata_update.vehiclemanufacturer;
+        }else if((tabelrowdata_update.vehiclemanufacturer==null) && ($("#control_vehiclemanufacturer").val()=="")){
+            delete tabelrowdata_update.vehiclemanufacturer;
+        }else {
+            tabelrowdata_update.vehiclemanufacturer = $("#control_vehiclemanufacturer").val();
+        }
+        
+        if (tabelrowdata_update.vehiclecolor == $("#control_vehiclecolor").val()) {
+            delete tabelrowdata_update.vehiclecolor;
+        }else if((tabelrowdata_update.vehiclecolor==null) && ($("#control_vehiclecolor").val()=="")){
+            delete tabelrowdata_update.vehiclecolor;
+        }else {
+            tabelrowdata_update.vehiclecolor = $("#control_vehiclecolor").val();
+        }
+        
+        if (tabelrowdata_update.vehiclefueltype == $("#control_vehiclefueltype").val()) {
+            delete tabelrowdata_update.vehiclefueltype;
+        }else if((tabelrowdata_update.vehiclefueltype==null) && ($("#control_vehiclefueltype").val()=="")){
+            delete tabelrowdata_update.vehiclefueltype;
+        }else {
+            tabelrowdata_update.vehiclefueltype = $("#control_vehiclefueltype").val();
+        }
+        
+        if (tabelrowdata_update.vehicleenginesize == $("#control_vehicleenginesize").val()) {
+            delete tabelrowdata_update.vehicleenginesize;
+        }else if((tabelrowdata_update.vehicleenginesize==null) && ($("#control_vehicleenginesize").val()=="")){
+            delete tabelrowdata_update.vehicleenginesize;
+        }else {
+            tabelrowdata_update.vehicleenginesize = $("#control_vehicleenginesize").val();
+        }
+        
+        if (tabelrowdata_update.vehiclebatterysize == $("#control_vehiclebatterysize").val()) {
+            delete tabelrowdata_update.vehiclebatterysize;
+        }else if((tabelrowdata_update.vehiclebatterysize==null) && ($("#control_vehiclebatterysize").val()=="")){
+            delete tabelrowdata_update.vehiclebatterysize;
+        }else {
+            tabelrowdata_update.vehiclebatterysize = $("#control_vehiclebatterysize").val();
+        }
+        
+        if (tabelrowdata_update.vehiclewheelbase == $("#control_vehiclewheelbase").val()) {
+            delete tabelrowdata_update.vehiclewheelbase;
+        }else if((tabelrowdata_update.vehiclewheelbase==null) && ($("#control_vehiclewheelbase").val()=="")){
+            delete tabelrowdata_update.vehiclewheelbase;
+        }else {
+            tabelrowdata_update.vehiclewheelbase = $("#control_vehiclewheelbase").val();
+        }
+        
+        if (tabelrowdata_update.vehiclefullweight == $("#control_vehiclefullweight").val()) {
+            delete tabelrowdata_update.vehiclefullweight;
+        }else if((tabelrowdata_update.vehiclefullweight==null) && ($("#control_vehiclefullweight").val()=="")){
+            delete tabelrowdata_update.vehiclefullweight;
+        }else {
+            tabelrowdata_update.vehiclefullweight = $("#control_vehiclefullweight").val();
+        }
+        
+        if (tabelrowdata_update.vehiclefullpoerson == $("#control_vehiclefullpoerson").val()) {
+            delete tabelrowdata_update.vehiclefullpoerson;
+        }else if((tabelrowdata_update.vehiclefullpoerson==null) && ($("#control_vehiclefullpoerson").val()=="")){
+            delete tabelrowdata_update.vehiclefullpoerson;
+        }else {
+            tabelrowdata_update.vehiclefullpoerson = $("#control_vehiclefullpoerson").val();
+        }
+        
+        if (tabelrowdata_update.vehicleloadweight == $("#control_vehicleloadweight").val()) {
+            delete tabelrowdata_update.vehicleloadweight;
+        }else if((tabelrowdata_update.vehicleloadweight==null) && ($("#control_vehicleloadweight").val()=="")){
+            delete tabelrowdata_update.vehicleloadweight;
+        }else {
+            tabelrowdata_update.vehicleloadweight = $("#control_vehicleloadweight").val();
+        }
+        
+        if (tabelrowdata_update.vehiclephotofront == $("#control_vehiclephotofront").val()) {
+            delete tabelrowdata_update.vehiclephotofront;
+        }else if((tabelrowdata_update.vehiclephotofront==null) && ($("#control_vehiclephotofront").val()=="")){
+            delete tabelrowdata_update.vehiclephotofront;
+        }else {
+            tabelrowdata_update.vehiclephotofront = $("#control_vehiclephotofront").val();
+        }
+        
+        if (tabelrowdata_update.vehiclephotoside == $("#control_vehiclephotoside").val()) {
+            delete tabelrowdata_update.vehiclephotoside;
+        }else if((tabelrowdata_update.vehiclephotoside==null) && ($("#control_vehiclephotoside").val()=="")){
+            delete tabelrowdata_update.vehiclephotoside;
+        }else {
+            tabelrowdata_update.vehiclephotoside = $("#control_vehiclephotoside").val();
+        }
+        
+        if (tabelrowdata_update.vehiclephotoback == $("#control_vehiclephotoback").val()) {
+            delete tabelrowdata_update.vehiclephotoback;
+        }else if((tabelrowdata_update.vehiclephotoback==null) && ($("#control_vehiclephotoback").val()=="")){
+            delete tabelrowdata_update.vehiclephotoback;
+        }else {
+            tabelrowdata_update.vehiclephotoback = $("#control_vehiclephotoback").val();
+        }
+        
+        if (tabelrowdata_update.vehiclegps_installtime == $("#control_vehiclegps_installtime").val()) {
+            delete tabelrowdata_update.vehiclegps_installtime;
+        }else if((tabelrowdata_update.vehiclegps_installtime==null) && ($("#control_vehiclegps_installtime").val()=="")){
+            delete tabelrowdata_update.vehiclegps_installtime;
+        }else {
+            tabelrowdata_update.vehiclegps_installtime = $("#control_vehiclegps_installtime").val();
+        }
+        
+        if (tabelrowdata_update.vehiclegps_manufacturer == $("#control_vehiclegps_manufacturer").val()) {
+            delete tabelrowdata_update.vehiclegps_manufacturer;
+        }else if((tabelrowdata_update.vehiclegps_manufacturer==null) && ($("#control_vehiclegps_manufacturer").val()=="")){
+            delete tabelrowdata_update.vehiclegps_manufacturer;
+        }else {
+            tabelrowdata_update.vehiclegps_manufacturer = $("#control_vehiclegps_manufacturer").val();
+        }
+        
+        if (tabelrowdata_update.vehiclegps_model == $("#control_vehiclegps_model").val()) {
+            delete tabelrowdata_update.vehiclegps_model;
+        }else if((tabelrowdata_update.vehiclegps_model==null) && ($("#control_vehiclegps_model").val()=="")){
+            delete tabelrowdata_update.vehiclegps_model;
+        }else {
+            tabelrowdata_update.vehiclegps_model = $("#control_vehiclegps_model").val();
+        }
+        
+        if (tabelrowdata_update.vehiclegps_deviceid == $("#control_vehiclegps_deviceid").val()) {
+            delete tabelrowdata_update.vehiclegps_deviceid;
+        }else if((tabelrowdata_update.vehiclegps_deviceid==null) && ($("#control_vehiclegps_deviceid").val()=="")){
+            delete tabelrowdata_update.vehiclegps_deviceid;
+        }else {
+            tabelrowdata_update.vehiclegps_deviceid = $("#control_vehiclegps_deviceid").val();
+        }
+        
+        if (tabelrowdata_update.vehicleprint_manufacturer == $("#control_vehicleprint_manufacturer").val()) {
+            delete tabelrowdata_update.vehicleprint_manufacturer;
+        }else if((tabelrowdata_update.vehicleprint_manufacturer==null) && ($("#control_vehicleprint_manufacturer").val()=="")){
+            delete tabelrowdata_update.vehicleprint_manufacturer;
+        }else {
+            tabelrowdata_update.vehicleprint_manufacturer = $("#control_vehicleprint_manufacturer").val();
+        }
+        
+        if (tabelrowdata_update.vehicleprint_model == $("#control_vehicleprint_model").val()) {
+            delete tabelrowdata_update.vehicleprint_model;
+        }else if((tabelrowdata_update.vehicleprint_model==null) && ($("#control_vehicleprint_model").val()=="")){
+            delete tabelrowdata_update.vehicleprint_model;
+        }else {
+            tabelrowdata_update.vehicleprint_model = $("#control_vehicleprint_model").val();
+        }
+        
+        if (tabelrowdata_update.vehicleprint_deviceid == $("#control_vehicleprint_deviceid").val()) {
+            delete tabelrowdata_update.vehicleprint_deviceid;
+        }else if((tabelrowdata_update.vehicleprint_deviceid==null) && ($("#control_vehicleprint_deviceid").val()=="")){
+            delete tabelrowdata_update.vehicleprint_deviceid;
+        }else {
+            tabelrowdata_update.vehicleprint_deviceid = $("#control_vehicleprint_deviceid").val();
+        }
+        
+        if (tabelrowdata_update.vehicledescription == $("#control_vehicledescription").val()) {
+            delete tabelrowdata_update.vehicledescription;
+        }else if((tabelrowdata_update.vehicledescription==null) && ($("#control_vehicledescription").val()=="")){
+            delete tabelrowdata_update.vehicledescription;
+        }else {
+            tabelrowdata_update.vehicledescription = $("#control_vehicledescription").val();
+        }
+        
+        if (tabelrowdata_update.vehiclesignin_address == $("#control_vehiclesignin_address").val()) {
+            delete tabelrowdata_update.vehiclesignin_address;
+        }else if((tabelrowdata_update.vehiclesignin_address==null) && ($("#control_vehiclesignin_address").val()=="")){
+            delete tabelrowdata_update.vehiclesignin_address;
+        }else {
+            tabelrowdata_update.vehiclesignin_address = $("#control_vehiclesignin_address").val();
+        }
+        
+        if (tabelrowdata_update.vehicleprint_time == $("#control_vehicleprint_time").val()) {
+            delete tabelrowdata_update.vehicleprint_time;
+        }else if((tabelrowdata_update.vehicleprint_time==null) && ($("#control_vehicleprint_time").val()=="")){
+            delete tabelrowdata_update.vehicleprint_time;
+        }else {
+            tabelrowdata_update.vehicleprint_time = $("#control_vehicleprint_time").val();
+        }
+        
+        if (tabelrowdata_update.vehicleowner_name == $("#control_vehicleowner_name").val()) {
+            delete tabelrowdata_update.vehicleowner_name;
+        }else if((tabelrowdata_update.vehicleowner_name==null) && ($("#control_vehicleowner_name").val()=="")){
+            delete tabelrowdata_update.vehicleowner_name;
+        }else {
+            tabelrowdata_update.vehicleowner_name = $("#control_vehicleowner_name").val();
+        }
+        
+        if (tabelrowdata_update.vehicleowner_cardid == $("#control_vehicleowner_cardid").val()) {
+            delete tabelrowdata_update.vehicleowner_cardid;
+        }else if((tabelrowdata_update.vehicleowner_cardid==null) && ($("#control_vehicleowner_cardid").val()=="")){
+            delete tabelrowdata_update.vehicleowner_cardid;
+        }else {
+            tabelrowdata_update.vehicleowner_cardid = $("#control_vehicleowner_cardid").val();
+        }
+        
+        if (tabelrowdata_update.vehicleowner_phone == $("#control_vehicleowner_phone").val()) {
+            delete tabelrowdata_update.vehicleowner_phone;
+        }else if((tabelrowdata_update.vehicleowner_phone==null) && ($("#control_vehicleowner_phone").val()=="")){
+            delete tabelrowdata_update.vehicleowner_phone;
+        }else {
+            tabelrowdata_update.vehicleowner_phone = $("#control_vehicleowner_phone").val();
+        }
+        
+        if (tabelrowdata_update.vehicleowner_company_name == $("#control_vehicleowner_company_name").val()) {
+            delete tabelrowdata_update.vehicleowner_company_name;
+        }else if((tabelrowdata_update.vehicleowner_company_name==null) && ($("#control_vehicleowner_company_name").val()=="")){
+            delete tabelrowdata_update.vehicleowner_company_name;
+        }else {
+            tabelrowdata_update.vehicleowner_company_name = $("#control_vehicleowner_company_name").val();
+        }
+        
+        if (tabelrowdata_update.vehicleowner_company_cardid == $("#control_vehicleowner_company_cardid").val()) {
+            delete tabelrowdata_update.vehicleowner_company_cardid;
+        }else if((tabelrowdata_update.vehicleowner_company_cardid==null) && ($("#control_vehicleowner_company_cardid").val()=="")){
+            delete tabelrowdata_update.vehicleowner_company_cardid;
+        }else {
+            tabelrowdata_update.vehicleowner_company_cardid = $("#control_vehicleowner_company_cardid").val();
+        }
+        
+        if (tabelrowdata_update.vehicleowner_company_phone == $("#control_vehicleowner_company_phone").val()) {
+            delete tabelrowdata_update.vehicleowner_company_phone;
+        }else if((tabelrowdata_update.vehicleowner_company_phone==null) && ($("#control_vehicleowner_company_phone").val()=="")){
+            delete tabelrowdata_update.vehicleowner_company_phone;
+        }else {
+            tabelrowdata_update.vehicleowner_company_phone = $("#control_vehicleowner_company_phone").val();
+        }
+        
+        if (tabelrowdata_update.vehiclebelongplat == $("#control_vehiclebelongplat").val()) {
+            delete tabelrowdata_update.vehiclebelongplat;
+        }else if((tabelrowdata_update.vehiclebelongplat==null) && ($("#control_vehiclebelongplat").val()=="")){
+            delete tabelrowdata_update.vehiclebelongplat;
+        }else {
+            tabelrowdata_update.vehiclebelongplat = $("#control_vehiclebelongplat").val();
+        }
+        
+        if (tabelrowdata_update.vehiclebelongplat_child == $("#control_vehiclebelongplat_child").val()) {
+            delete tabelrowdata_update.vehiclebelongplat_child;
+        }else if((tabelrowdata_update.vehiclebelongplat_child==null) && ($("#control_vehiclebelongplat_child").val()=="")){
+            delete tabelrowdata_update.vehiclebelongplat_child;
+        }else {
+            tabelrowdata_update.vehiclebelongplat_child = $("#control_vehiclebelongplat_child").val();
+        }
+        
+        if (tabelrowdata_update.vehiclemaster_name == $("#control_vehiclemaster_name").val()) {
+            delete tabelrowdata_update.vehiclemaster_name;
+        }else if((tabelrowdata_update.vehiclemaster_name==null) && ($("#control_vehiclemaster_name").val()=="")){
+            delete tabelrowdata_update.vehiclemaster_name;
+        }else {
+            tabelrowdata_update.vehiclemaster_name = $("#control_vehiclemaster_name").val();
+        }
+        
+        if (tabelrowdata_update.vehiclemaster_cardid == $("#control_vehiclemaster_cardid").val()) {
+            delete tabelrowdata_update.vehiclemaster_cardid;
+        }else if((tabelrowdata_update.vehiclemaster_cardid==null) && ($("#control_vehiclemaster_cardid").val()=="")){
+            delete tabelrowdata_update.vehiclemaster_cardid;
+        }else {
+            tabelrowdata_update.vehiclemaster_cardid = $("#control_vehiclemaster_cardid").val();
+        }
+        
+    }
+
+</script>
+
+
+    <!-- Modal 3 (Custom Width)-->
+    <div class="modal fade custom-width" id="modal-photo">
+        <div class="modal-dialog" style="width:80%;">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">图像处理</h4>
+                </div>
+
+                <div class="modal-body ">
+                    <img id="modal-photo-img" class="img-responsive" style="width:100%" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-info">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% end %}

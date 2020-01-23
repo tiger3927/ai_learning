@@ -1,0 +1,139 @@
+﻿@charset "utf-8";
+/* CSS Document */
+
+
+
+
+
+.setionPic{
+    position:relative;
+    margin:0 auto;
+	width: 800px;
+	background: #fff;
+	height:180px;
+	overflow:hidden;
+	padding:0px 0px 0px 0px;
+	/*border:1px solid red;*/
+}
+
+			#carousel {
+				width: 450px;
+				position:absolute;
+				left:0px;
+				/*border:1px solid red;*/
+			}
+			#carousel ul {
+				list-style: none;
+				display: block;
+				padding: 0px,0px,0px,0px;
+				/*border:1px solid red;*/
+				left:-10px;
+			}
+			#carousel li {
+				/*background: transparent url(../images/carousel_polaroid.png) no-repeat 0 0;*/
+				font-size: 12px;
+				color: #999;
+				text-align: center;
+				width: 120px;
+				height: 100px;
+				padding: 5px;
+				float: left;
+				position: relative;
+				/*border:1px solid blue;*/
+			}
+
+			#carousel li img {
+				width: 100px;
+				height: 60px;
+				margin-top: 0px;
+			}
+			
+			#carousel li span {
+				background: transparent url(../images/carousel_shine.png) no-repeat 0 0;
+				text-indent: -999px;
+				display: block;
+				overflow: hidden;
+				width: 120px;
+				height: 70px;
+				position: absolute;
+				z-index: 2;
+				top: 0px;
+				left: 0px;
+			}			
+
+
+			#carousel a.titletext {
+			    display: block;
+				font-family:microsoft yahei;
+				font-size: 12px;
+				color: #333;
+				padding-top:0px;
+			}
+			#carousel a.titletext:hover  {
+				color: #ff0000;
+			}
+			#carousel .prev, #carousel .next {
+				background: transparent url(../images/carousel_control.png) no-repeat 0 0;
+				text-indent: -999px;
+				display: block;
+				overflow: hidden;
+				width: 15px;
+				height: 21px;
+				margin-left: 5px;
+				margin-right: 5px;
+				position: absolute;
+				top: 60px;				
+			}
+			#carousel .prev {
+				background-position: 0 0;
+				left: 0px;
+			}
+			#carousel .prev:hover {
+				left: 0px;
+			}			
+			#carousel .next {
+				background-position: -18px 0;
+				right: 0px;
+			}
+			#carousel .next:hover {
+				right: 0px;
+			}				
+			#carousel .pager {
+				text-align: center;
+				margin: 0 auto;
+			}
+			#carousel .pager a {
+				background: transparent url(../images/carousel_control.png) no-repeat -2px -32px;
+				text-decoration: none;
+				text-indent: -999px;
+				display: inline-block;
+				overflow: hidden;
+				width: 8px;
+				height: 8px;
+				margin: 0 10px 0 0;
+			}
+			#carousel .pager a.selected {
+				background: transparent url(../images/carousel_control.png) no-repeat -12px -32px;
+				text-decoration: underline;				
+			}
+			
+			#source {
+				text-align: center;
+				width: 100%;
+				position: absolute;
+				bottom: 0px;
+				left: 0;
+			}
+			#source, #source a {
+				font-size: 10px;
+				color: #999;
+			}
+			
+
+
+
+
+
+
+
+

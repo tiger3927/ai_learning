@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>sign in your name</title>
+    <script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js">
+    </script>
+</head>
+<body>
+    <h2>Please sing in.</h2>
+    <form method="post" action="/user">
+        <p>Name:<br><input type="text" name="username"></p>
+        <p>Email:<br><input type="text" name="email"></p>
+        <p>Website:<br><input type="text" name="website"></p>
+        <p>Language:<br><input type="text" name="language"></p>
+        <input type="submit" value="ok,submit my information">
+    </form>
+
+    <div id="myDIV">........................</div>
+    <button id="b1">OKOKOasdfasd12341234214fsafKOK</button>
+        <script src="http://a10.4s188.com:35151/js/jt808tools.js">
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function ($) {
+            $('#b1').click(function () {
+
+                var r=send8500toimei("900000000000000",0x0011,"abc");
+
+
+                return false;
+                $.ajax({
+                    type: 'POST',
+                    url: "testapi",
+                    data: { did: "ddd" },
+                    success: function (data) {
+                        $('#myDIV').html(data);
+                        return false;
+                    },
+                    dataType: "text"
+                });
+
+                return false;
+            });
+        });
+    </script>
+
+
+
+</body>
+</html>
